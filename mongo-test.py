@@ -1,6 +1,6 @@
 import sys
 from mongoengine import connect, disconnect, Document, StringField, ReferenceField, EmailField
-from mongoengine.errors import ValidationError, NotUniqueError
+from mongoengine.errors import ValidationError, NotUniqueError, DoesNotExist
 
 class User(Document):
     email = EmailField(required=True, unique=True)
@@ -30,14 +30,11 @@ def AddPost() -> bool:
     newPost.title = input('Enter Title: ')
     author = input('Enter Author Email: ')
 
-    authorMatches = User.objects(email=author) # type: ignore
+    authorMatches = User.objects.get(email=author) # type: ignore
 
-    if len(authorMatches) == 1:
-        newPost.author = authorMatches[0]
-        newPost.save()
-        return True
-    else:
-        return False
+    newPost.author = authorMatches
+    newPost.save()
+    return True
 
 def CloseConnectionAndExit() -> None:
     disconnect()
@@ -102,6 +99,9 @@ if __name__ == '__main__':
         except NotUniqueError:
             print()
             print('Email Address not Unique')
+        except DoesNotExist:
+            print()
+            print('Email Address does not Exist')
         except Exception as e:
             print('Error, exiting')
             print(type(e))
