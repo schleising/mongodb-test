@@ -1,5 +1,7 @@
+from __future__ import annotations
 import sys
-from mongoengine import connect, disconnect, Document, StringField, ReferenceField, EmailField
+from typing import Optional
+from mongoengine import connect, disconnect, Document, StringField, ReferenceField, EmailField, queryset_manager, QuerySet
 from mongoengine.errors import ValidationError, NotUniqueError, DoesNotExist
 
 class User(Document):
@@ -7,6 +9,16 @@ class User(Document):
 
     firstName = StringField(max_length=50)
     lastName = StringField(max_length=50)
+
+    @queryset_manager
+    def GetByEmail(cls, queryset: QuerySet, email: str) -> User:
+        try:
+            user: User = queryset.get(email=email) # type: ignore
+        except DoesNotExist:
+            print('Creating New User')
+            user = AddUser(email)
+
+        return user
 
 class Post(Document):
     title = StringField(max_length=120, required=True)
@@ -16,21 +28,25 @@ class Post(Document):
 class TextPost(Post):
     content = StringField
 
-def AddUser() -> bool:
+def AddUser(email: Optional[str] = None) -> User:
     newUser = User()
-    newUser.email = input('Enter email address: ')
+
+    if email is not None:
+        newUser.email = email
+    else:
+        newUser.email = input('Enter email address: ')
     newUser.firstName = input('Enter first name: ')
     newUser.lastName = input('Enter last name: ')
     newUser.save()
 
-    return True
+    return newUser
 
 def AddPost() -> bool:
     newPost = TextPost()
     newPost.title = input('Enter Title: ')
     author = input('Enter Author Email: ')
 
-    authorMatches = User.objects.get(email=author) # type: ignore
+    authorMatches = User.GetByEmail(author) # type: ignore
 
     newPost.author = authorMatches
     newPost.save()
@@ -60,10 +76,7 @@ if __name__ == '__main__':
             match option.lower():
                 case '1':
                     print('Adding User')
-                    if AddUser():
-                        print('User added')
-                    else:
-                        print('There was a problem')
+                    AddUser()
                 case '2':
                     print('Adding Post')
                     if AddPost():
