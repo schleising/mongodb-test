@@ -106,3 +106,18 @@ class MongoConnector:
 
             # Return None
             return None
+
+    def get_database_list(self) -> list[str]:
+        # Return list of databases
+        return sorted(self._client.list_database_names())
+
+    def get_collection_list(self, database_name: str) -> list[str]:
+        # Get database
+        database = self.get_database(database_name)
+
+        # Return None if database not found
+        if database is None:
+            return []
+
+        # Return list of collections
+        return sorted(database.list_collection_names())
