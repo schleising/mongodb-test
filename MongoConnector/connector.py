@@ -12,7 +12,12 @@ from . import logger
 class MongoConnector:
     def __init__(self, server_url: str | None = None, enable_debug: bool = False) -> None:
         '''
-        Connect to a mongodb server
+        MongoConnector
+        --------------
+
+        Connect to a mongodb server, will read the server url from a file if not provided.
+
+        The connection will be closed on exit either normally or by an exception.
         
         Parameters
         ----------
@@ -44,9 +49,6 @@ class MongoConnector:
         ['admin', 'config', 'local']
         >>> connector.get_collection_list('admin')
         ['system.version']
-        >>> connector.close()
-        >>> connector.connected
-        False
         '''
         # Set the logging level to DEBUG if enabled
         if enable_debug:
@@ -73,6 +75,13 @@ class MongoConnector:
 
             # Set connected flag
             self.connected = False
+            '''
+            A flag indicating whether the connector is connected to the mongodb server
+            
+            Type: bool
+            
+            True if connected, False otherwise
+            '''
         else:
             # Log success message
             logger.debug(f'Connected to server {self._server_url}')
