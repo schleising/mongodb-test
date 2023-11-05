@@ -1,4 +1,5 @@
 import atexit
+import logging
 from pathlib import Path
 
 from pymongo import MongoClient
@@ -9,7 +10,11 @@ from pymongo.errors import ConnectionFailure
 from . import logger
 
 class MongoConnector:
-    def __init__(self, server_url: str | None = None) -> None:
+    def __init__(self, server_url: str | None = None, enable_debug: bool = False) -> None:
+        # Set the logging level to DEBUG if enabled
+        if enable_debug:
+            logger.setLevel(logging.DEBUG)
+
         # Check if server url is provided
         if server_url is None:
             # Get server url
